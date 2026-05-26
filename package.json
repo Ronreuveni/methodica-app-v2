@@ -6,7 +6,8 @@
   "description": "Methodica studio production board — Supabase-backed, multi-user, real-time",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
     "supabase:gen-types": "supabase gen types typescript --linked --schema public > src/lib/database.types.ts"
