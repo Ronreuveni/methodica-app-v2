@@ -90,21 +90,35 @@ export interface AllowedEmailRow {
   added_at: string;
 }
 
+// Supabase's generated Database type requires Relationships and CompositeTypes
+// fields on each table — without them the .update()/.upsert() generic resolves
+// to `never` and the build fails on every mutation.
+type TableShape<Row, InsertExtra extends Record<string, unknown>> = {
+  Row: Row;
+  Insert: Partial<Row> & InsertExtra;
+  Update: Partial<Row>;
+  Relationships: [];
+};
+
 export interface Database {
   public: {
     Tables: {
-      producers:      { Row: ProducerRow;      Insert: Partial<ProducerRow>      & { id: string; name: string }; Update: Partial<ProducerRow> };
-      teams:          { Row: TeamRow;          Insert: Partial<TeamRow>          & { id: string; name: string }; Update: Partial<TeamRow> };
-      clients:        { Row: ClientRow;        Insert: Partial<ClientRow>        & { id: string; name: string }; Update: Partial<ClientRow> };
-      projects:       { Row: ProjectRow;       Insert: Partial<ProjectRow>       & { id: string; name: string }; Update: Partial<ProjectRow> };
-      history:        { Row: HistoryRow;       Insert: Partial<HistoryRow>       & { id: string; name: string }; Update: Partial<HistoryRow> };
-      assignments:    { Row: AssignmentRow;    Insert: Partial<AssignmentRow>    & { id: string; producer_id: string; date: string }; Update: Partial<AssignmentRow> };
-      allowed_emails: { Row: AllowedEmailRow;  Insert: Partial<AllowedEmailRow>  & { email: string }; Update: Partial<AllowedEmailRow> };
+      producers:      TableShape<ProducerRow,     { id: string; name: string }>;
+      teams:          TableShape<TeamRow,         { id: string; name: string }>;
+      clients:        TableShape<ClientRow,       { id: string; name: string }>;
+      projects:       TableShape<ProjectRow,      { id: string; name: string }>;
+      history:        TableShape<HistoryRow,      { id: string; name: string }>;
+      assignments:    TableShape<AssignmentRow,   { id: string; producer_id: string; date: string }>;
+      allowed_emails: TableShape<AllowedEmailRow, { email: string }>;
     };
     Views: Record<string, never>;
     Functions: {
-      is_allowed_user: { Args: Record<string, never>; Returns: boolean };
+      is_allowed_user: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
     };
     Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }

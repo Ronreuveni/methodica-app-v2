@@ -125,15 +125,18 @@ export function useStudioData(opts: { enabled: boolean }): StudioData {
   // Each helper does an optimistic local update first, then writes the row.
   // On error, we restore the previous state and surface the error.
 
+  // Supabase queries return a PostgrestFilterBuilder, which is thenable
+  // (you can call .then()) but TypeScript doesn't treat it as a real Promise.
+  // PromiseLike + Promise.resolve() bridges that and keeps the helper generic.
   const withOptimistic = <T extends { id: string }>(
     list: T[],
     setList: React.Dispatch<React.SetStateAction<T[]>>,
     next: T[],
-    request: () => Promise<{ error: unknown }>,
-  ) => {
+    request: () => PromiseLike<{ error: unknown }>,
+  ): Promise<void> => {
     const prev = list;
     setList(next);
-    return request().then(({ error }) => {
+    return Promise.resolve(request()).then(({ error }) => {
       if (error) {
         setList(prev);
         throw error instanceof Error ? error : new Error(String(error));
@@ -281,24 +284,35 @@ function replaceOrAppend<T extends { id: string }>(list: T[], item: T): T[] {
   return copy;
 }
 
+// Realtime payload as Supabase delivers it. `new` and `old` are empty
+// objects (not null) for irrelevant directions of the event (eg `new` on a
+// DELETE), so we check `id` rather than null.
+type RtPayload = {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  new: Record<string, unknown>;
+  old: Record<string, unknown>;
+};
+
 // Merges a single realtime payload into a list. Inserts append, updates
 // replace, deletes remove. Idempotent — if the payload is an echo of an
 // optimistic update we already applied, nothing visible changes.
-function applyRealtime<R extends { id: string }, T extends { id: string }>(
+function applyRealtime<T extends { id: string }>(
   _label: string,
-  payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: R | null; old: R | null },
+  payload: RtPayload,
   setList: React.Dispatch<React.SetStateAction<T[]>>,
-  fromRow: (r: R) => T,
+  // The Row type lives in database.types — we accept anything that's
+  // converted to a domain object T by `fromRow`.
+  fromRow: (r: never) => T,
 ) {
   if (payload.eventType === 'DELETE') {
-    const oldId = (payload.old as R | null)?.id;
+    const oldId = (payload.old as { id?: string }).id;
     if (!oldId) return;
     setList(list => list.filter(x => x.id !== oldId));
     return;
   }
-  const row = payload.new as R | null;
-  if (!row) return;
-  const next = fromRow(row);
+  const row = payload.new as { id?: string };
+  if (!row || !row.id) return;
+  const next = fromRow(row as never);
   setList(list => {
     const idx = list.findIndex(x => x.id === next.id);
     if (idx < 0) return [...list, next];

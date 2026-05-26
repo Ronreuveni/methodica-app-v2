@@ -8,7 +8,7 @@ import { PageHead } from '../components/PageHead';
 import { StatusPill } from '../components/StatusPill';
 import { Avatar } from '../components/Avatar';
 import type { StudioData } from '../hooks/useStudioData';
-import type { DateField } from '../lib/types';
+import type { DateField, ProjectStatus } from '../lib/types';
 
 const HEBREW_MONTHS = ['ינו׳','פבר׳','מרץ','אפר׳','מאי','יונ׳','יול׳','אוג׳','ספט׳','אוק׳','נוב׳','דצמ׳'];
 
@@ -135,7 +135,7 @@ export function ProducerView({ data, producerId, onBack }: {
                       <select
                         className="cell-input"
                         value={p.status}
-                        onChange={e => { void data.patchProject(p.id, { status: e.target.value as any }); }}
+                        onChange={e => { void data.patchProject(p.id, { status: e.target.value as ProjectStatus }); }}
                       >
                         {Object.entries({ planning:'בתכנון', production:'בהפקה', review:'בתיקוף', done:'הושלם', frozen:'מוקפא' })
                           .map(([k, label]) => <option key={k} value={k}>{label}</option>)}

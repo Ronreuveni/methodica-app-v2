@@ -8,6 +8,14 @@ import type {
   Producer, Team, Project, HistoryItem, Assignment, DateField,
 } from './types';
 
+// Update payloads — each is a partial of the row, used as the argument to
+// supabase.from(table).update(...). Declared as separate types so TypeScript
+// matches them against the Database['public']['Tables'][T]['Update'] shape.
+type ProducerUpdate   = Partial<ProducerRow>;
+type TeamUpdate       = Partial<TeamRow>;
+type ProjectUpdate    = Partial<ProjectRow>;
+type AssignmentUpdate = Partial<AssignmentRow>;
+
 // ── Date helpers ────────────────────────────────────────────────────────
 function rowToDateField(single: string, from: string, to: string): DateField {
   if (from || to) return { from: from || '', to: to || '' };
@@ -45,8 +53,8 @@ export function producerToInsert(p: Partial<Producer> & { id: string; name: stri
     note: p.note ?? null,
   };
 }
-export function producerToUpdate(p: Partial<Producer>): Record<string, unknown> {
-  const u: Record<string, unknown> = {};
+export function producerToUpdate(p: Partial<Producer>): ProducerUpdate {
+  const u: ProducerUpdate = {};
   if (p.name !== undefined)        u.name = p.name;
   if (p.color !== undefined)       u.color = p.color;
   if (p.capacity !== undefined)    u.capacity = p.capacity;
@@ -66,10 +74,10 @@ export function rowToTeam(r: TeamRow): Team {
 export function teamToInsert(t: Partial<Team> & { id: string; name: string }) {
   return { id: t.id, name: t.name, leader_id: t.leaderId ?? null, sort_index: t.sortIndex ?? 0 };
 }
-export function teamToUpdate(t: Partial<Team>): Record<string, unknown> {
-  const u: Record<string, unknown> = {};
-  if (t.name !== undefined)     u.name = t.name;
-  if (t.leaderId !== undefined) u.leader_id = t.leaderId;
+export function teamToUpdate(t: Partial<Team>): TeamUpdate {
+  const u: TeamUpdate = {};
+  if (t.name !== undefined)      u.name = t.name;
+  if (t.leaderId !== undefined)  u.leader_id = t.leaderId;
   if (t.sortIndex !== undefined) u.sort_index = t.sortIndex;
   return u;
 }
@@ -104,8 +112,8 @@ export function projectToInsert(p: Partial<Project> & { id: string; name: string
     sort_index: p.sortIndex ?? 0,
   };
 }
-export function projectToUpdate(p: Partial<Project>): Record<string, unknown> {
-  const u: Record<string, unknown> = {};
+export function projectToUpdate(p: Partial<Project>): ProjectUpdate {
+  const u: ProjectUpdate = {};
   if (p.name !== undefined)       u.name = p.name;
   if (p.type !== undefined)       u.type = p.type;
   if (p.status !== undefined)     u.status = p.status;
@@ -156,8 +164,8 @@ export function assignmentToInsert(a: Partial<Assignment> & { id: string; produc
     label: a.label ?? null,
   };
 }
-export function assignmentToUpdate(a: Partial<Assignment>): Record<string, unknown> {
-  const u: Record<string, unknown> = {};
+export function assignmentToUpdate(a: Partial<Assignment>): AssignmentUpdate {
+  const u: AssignmentUpdate = {};
   if (a.producerId !== undefined) u.producer_id = a.producerId;
   if (a.date !== undefined)       u.date = a.date;
   if (a.projectId !== undefined)  u.project_id = a.projectId;
