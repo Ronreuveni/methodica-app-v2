@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-orange: #EC8223;
+    --brand-blue:   #3B8DBC;
+    --brand-green:  #7DA842;
+    --ink-900: #1F2937;
+    --ink-700: #4B5563;
+    --ink-500: #6B7280;
+    --line:    #E5E7EB;
+    --bg-card: #FFFFFF;
+    --bg-muted: #F9FAFB;
+  }
+  html, body, #root { height: 100%; }
+  body {
+    @apply font-sans bg-bg-warm text-ink-900 antialiased;
+    font-feature-settings: "kern", "liga";
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-bg-card border border-line rounded-lg shadow-card;
+  }
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium
+           border border-line bg-bg-card text-ink-900 hover:bg-bg-muted
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-brand-orange text-white border-transparent hover:bg-orange-600;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent hover:bg-bg-muted;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px]
+           bg-bg-muted text-ink-700 border border-transparent
+           hover:bg-line transition-colors;
+  }
+  .chip.active {
+    @apply bg-brand-orange text-white;
+  }
+  .cell-input {
+    @apply px-2 py-1 text-[13px] border border-line rounded bg-bg-card text-ink-900
+           outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/30;
+    direction: rtl;
+  }
+}
