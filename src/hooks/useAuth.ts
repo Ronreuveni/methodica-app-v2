@@ -13,7 +13,7 @@ export type AuthState = {
   email: string | null;
   isAllowed: boolean | null;    // null = unknown yet
   allowError: string | null;
-  signInWithGoogle: () => Promise<void>;
+  sendMagicLink: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -58,11 +58,21 @@ export function useAuth(): AuthState {
     return () => { cancelled = true; };
   }, [session]);
 
-  const signInWithGoogle = async () => {
+  // Sends a magic-link email. Supabase emails a one-click sign-in URL that
+  // redirects back to this app's origin. The user does NOT need a password.
+  // We also require the email be on the allowlist; if not, the sign-in still
+  // technically succeeds at the auth layer but the RLS check in useAuth
+  // immediately marks the session as not-allowed → user sees the gate page.
+  const sendMagicLink = async (email: string) => {
     if (!supabaseConfigured) throw new Error('Supabase not configured');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
+    const clean = email.trim().toLowerCase();
+    if (!clean) throw new Error('email is required');
+    const { error } = await supabase.auth.signInWithOtp({
+      email: clean,
+      options: {
+        emailRedirectTo: window.location.origin,
+        shouldCreateUser: true, // ok — RLS still blocks unless email is on allowlist
+      },
     });
     if (error) throw error;
   };
@@ -79,7 +89,7 @@ export function useAuth(): AuthState {
     email: session?.user?.email ?? null,
     isAllowed,
     allowError,
-    signInWithGoogle,
+    sendMagicLink,
     signOut,
   }), [loading, session, isAllowed, allowError]);
 }
