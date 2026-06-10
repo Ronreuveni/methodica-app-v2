@@ -17,6 +17,8 @@ import type { StudioData } from '../hooks/useStudioData';
 import { BoardKanban } from './board/BoardKanban';
 import { PasteImportModal } from './board/PasteImportModal';
 import { EmailImportModal } from './board/EmailImportModal';
+import { ImportExcelModal } from '../components/ImportExcelModal';
+import { IS_LOCAL } from '../lib/backend';
 
 type SortMode = 'manual' | 'status' | 'client' | 'due';
 type Tab = 'active' | 'done';
@@ -35,6 +37,7 @@ export function BoardView({ data }: { data: StudioData }) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [showPaste, setShowPaste] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
+  const [showExcel, setShowExcel] = useState(false);
 
   const visible = useMemo(() => {
     let rows = data.projects.filter(p => {
@@ -114,6 +117,7 @@ export function BoardView({ data }: { data: StudioData }) {
     <div className="flex-1 min-w-0 overflow-y-auto px-8 py-6">
       <PageHead title="לוח הפקות" sub={`${counts.total} פרויקטים פעילים · ${counts.done} בארכיון`}
         actions={<>
+          {IS_LOCAL && <button className="btn btn-ghost" onClick={() => setShowExcel(true)}>📊 ייבוא אקסל</button>}
           <button className="btn btn-ghost" onClick={() => setShowEmail(true)}>📧 ייבוא ממייל</button>
           <button className="btn btn-ghost" onClick={() => setShowPaste(true)}>📋 ייבא שורה</button>
           <button className="btn btn-primary" onClick={addProject}><Icons.plus/> פרויקט חדש</button>
@@ -191,6 +195,7 @@ export function BoardView({ data }: { data: StudioData }) {
 
       {showPaste && <PasteImportModal onImport={p => void data.upsertProject(p)} onClose={() => setShowPaste(false)}/>}
       {showEmail && <EmailImportModal onImport={p => void data.upsertProject(p)} onClose={() => setShowEmail(false)}/>}
+      {showExcel && <ImportExcelModal onImport={data.importExcel} onClose={() => setShowExcel(false)}/>}
 
       {mode === 'kanban' ? (
         <BoardKanban rows={visible} kanbanBy={kanbanBy} producers={data.producers}/>

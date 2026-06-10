@@ -84,6 +84,22 @@ export interface AssignmentRow {
   updated_at: string;
 }
 
+export interface ProducerTaskRow {
+  id: string;
+  producer_id: string;
+  month_label: string;
+  name: string;
+  client: string;
+  pm: string;
+  hours: string;
+  due: string;
+  status: string;
+  report: string;
+  notes: string;
+  sort_index: number;
+  created_at: string;
+}
+
 export interface AllowedEmailRow {
   email: string;
   added_by: string | null;

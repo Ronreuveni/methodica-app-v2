@@ -6,6 +6,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, supabaseConfigured } from '../lib/supabase';
+import { IS_LOCAL } from '../lib/backend';
+import { useStudioDataLocal } from './useStudioDataLocal';
 import {
   assignmentToInsert, assignmentToUpdate,
   producerToInsert, producerToUpdate,
@@ -14,7 +16,7 @@ import {
   teamToInsert, teamToUpdate,
 } from '../lib/mappers';
 import type {
-  Assignment, HistoryItem, Producer, Project, Team,
+  Assignment, HistoryItem, ImportSummary, Producer, ProducerTask, Project, Team,
 } from '../lib/types';
 import type {
   AssignmentRow, ProducerRow, ProjectRow, HistoryRow, TeamRow,
@@ -46,6 +48,15 @@ export interface StudioData {
   upsertAssignment: (a: Partial<Assignment> & { id: string; producerId: string; date: string }) => Promise<void>;
   patchAssignment:  (id: string, patch: Partial<Assignment>) => Promise<void>;
   deleteAssignment: (id: string) => Promise<void>;
+
+  // Imported per-producer task logs (local backend only; empty on Supabase).
+  producerTasks: ProducerTask[];
+  patchProducerTask:  (id: string, patch: Partial<ProducerTask>) => Promise<void>;
+  deleteProducerTask: (id: string) => Promise<void>;
+
+  // Excel workbook import + manual refetch (local backend only).
+  importExcel: (file: File, mode: 'replace' | 'merge') => Promise<ImportSummary>;
+  refresh: () => Promise<void>;
 }
 
 type RowFor<T extends string> =
@@ -272,7 +283,24 @@ export function useStudioData(opts: { enabled: boolean }): StudioData {
     upsertTeam, patchTeam, deleteTeam,
     upsertProject, patchProject, deleteProject,
     upsertAssignment, patchAssignment, deleteAssignment,
+    // Not supported on the Supabase backend (use the local server for these).
+    producerTasks: EMPTY_TASKS,
+    patchProducerTask: async () => {},
+    deleteProducerTask: async () => {},
+    importExcel: async () => { throw new Error('ייבוא אקסל זמין רק במצב מסד נתונים מקומי'); },
+    refresh: async () => {},
   };
+}
+
+const EMPTY_TASKS: ProducerTask[] = [];
+
+// ──────────────────────────────────────────────────────────────────────
+// Backend selector — both hooks run unconditionally (rules of hooks); the
+// inactive one is disabled and stays empty.
+export function useStudio(opts: { enabled: boolean }): StudioData {
+  const supa = useStudioData({ enabled: opts.enabled && !IS_LOCAL });
+  const local = useStudioDataLocal({ enabled: opts.enabled && IS_LOCAL });
+  return IS_LOCAL ? local : supa;
 }
 
 // ──────────────────────────────────────────────────────────────────────

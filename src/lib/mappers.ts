@@ -149,6 +149,27 @@ export function rowToHistory(r: HistoryRow): HistoryItem {
   };
 }
 
+// ── Producer tasks (imported per-producer Excel logs) ──────────────────
+export function rowToProducerTask(r: import('./database.types').ProducerTaskRow): import('./types').ProducerTask {
+  return {
+    id: r.id, producerId: r.producer_id, monthLabel: r.month_label || '',
+    name: r.name, client: r.client || '', pm: r.pm || '',
+    hours: r.hours || '', due: r.due || '', status: r.status || '',
+    report: r.report || '', notes: r.notes || '', sortIndex: r.sort_index ?? 0,
+  };
+}
+export function producerTaskToUpdate(t: Partial<import('./types').ProducerTask>) {
+  const u: Partial<import('./database.types').ProducerTaskRow> = {};
+  if (t.name !== undefined)   u.name = t.name;
+  if (t.client !== undefined) u.client = t.client;
+  if (t.pm !== undefined)     u.pm = t.pm;
+  if (t.hours !== undefined)  u.hours = t.hours;
+  if (t.due !== undefined)    u.due = t.due;
+  if (t.status !== undefined) u.status = t.status;
+  if (t.notes !== undefined)  u.notes = t.notes;
+  return u;
+}
+
 // ── Assignments ────────────────────────────────────────────────────────
 export function rowToAssignment(r: AssignmentRow): Assignment {
   return {

@@ -68,6 +68,30 @@ export interface Assignment {
   label: string | null;
 }
 
+// A row from a producer's personal לו"ז sheet (imported from Excel) — the
+// historical month-by-month task log.
+export interface ProducerTask {
+  id: string;
+  producerId: string;
+  monthLabel: string;
+  name: string;
+  client: string;
+  pm: string;
+  hours: string;
+  due: string;
+  status: string;
+  report: string;
+  notes: string;
+  sortIndex: number;
+}
+
+export interface ImportSummary {
+  ok: boolean;
+  counts: Record<string, number>;
+  imported: Record<string, number>;
+  warnings: string[];
+}
+
 export const STATUSES: Record<ProjectStatus, { label: string; color: string; bg: string; ring: string }> = {
   planning:   { label: 'בתכנון',  color: '#9CA3AF', bg: '#F3F4F6', ring: '#D1D5DB' },
   production: { label: 'בהפקה',   color: '#EC8223', bg: '#FEF1E4', ring: '#F5B878' },

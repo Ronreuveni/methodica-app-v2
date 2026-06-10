@@ -42,3 +42,7 @@ supabase/.branches
 # Local caches
 .cache
 .parcel-cache
+
+# Local SQLite database - data lives on each machine, not in git
+server/data/
+tsconfig.tsbuildinfo

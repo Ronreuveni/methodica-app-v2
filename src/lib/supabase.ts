@@ -4,7 +4,6 @@
 // the server are what actually protect the data.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './database.types';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -19,7 +18,10 @@ if (!url || !anon) {
   );
 }
 
-export const supabase: SupabaseClient<Database> = createClient<Database>(
+// Untyped client: newer supabase-js versions require generated metadata our
+// hand-written Database mirror doesn't have, which collapses .upsert()/.update()
+// parameter types to `never`. Row types are enforced by the mappers instead.
+export const supabase: SupabaseClient = createClient(
   url ?? 'https://placeholder.supabase.co',
   anon ?? 'placeholder-anon-key',
   {

@@ -2,6 +2,7 @@
 // list links to the per-producer detail view. Sign-out button at the bottom.
 
 import clsx from 'clsx';
+import { IS_LOCAL } from '../lib/backend';
 import type { AuthState } from '../hooks/useAuth';
 import type { StudioData } from '../hooks/useStudioData';
 import type { Producer } from '../lib/types';
@@ -52,15 +53,24 @@ export function Sidebar({
       </nav>
 
       <div className="border-t border-white/10 p-3 text-[11px] text-white/70">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>
-          <span className="truncate" dir="ltr">{auth.email}</span>
-        </div>
-        <button
-          className="w-full text-right text-white/60 hover:text-white transition-colors py-1"
-          onClick={() => { void auth.signOut(); }}>
-          ← התנתק
-        </button>
+        {IS_LOCAL ? (
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>
+            <span>מסד נתונים מקומי · SQLite</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>
+              <span className="truncate" dir="ltr">{auth.email}</span>
+            </div>
+            <button
+              className="w-full text-right text-white/60 hover:text-white transition-colors py-1"
+              onClick={() => { void auth.signOut(); }}>
+              ← התנתק
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );
